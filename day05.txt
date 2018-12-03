@@ -1,0 +1,158 @@
+day04回顾
+
+1.主键 自增长(pri,不能重复,不能为NULL)
+    1.创建
+        id int primary key auto_increment
+
+
+        已有表
+        alter table 表名 add primary key(字段名);
+        2.删除
+            先删除自增长
+            1.alter table 表名 modify id int;
+            再删除主键
+            alter table 表名 drop primary key;
+
+2.外键
+    1.使用规则
+        1.数据类型要一致
+        2.主表被参考字段必须为key的一种,一般为主键 pri
+
+    2.语法格式
+        constraint 外键名 foreign key(字段) reference
+
+
+
+
+
+day05笔记
+
+1.E-R 模型(Entry-Relationship)
+    1.定义 :  实体关系数据模型,用与数据库的设计
+    2.实体 :  描述客观事物的概念就是实体(1个人,一本书,一个学生)
+        １．表示方法　：　矩形框
+    3.属性 :  实体具有的某种特性
+        学生 :　学号　姓名　年龄　性别　专业　．．．
+        １．表示方法： 椭圆形
+ ４．关系　：  实体之间的关系
+    　　　１．一对一　（１：１）　：　老公对老婆　
+            Ａ中一个实体，Ｂ中只能有一个实体与其发生关联　
+            Ｂ中一个实体，Ａ中只能有一个实体与其发生关联
+        ２．一对多（１：ｎ）：　父亲对孩子　
+        　　　
+        ３．多对多（ｍ：ｎ）　：　兄弟姐妹对兄弟姐妹
+ ５．数据库三范式
+        １．第一范式（１ＮＦ）：列不可拆分
+        ２．第二范式（２NF）:唯一标识
+        ３．第三范式（３ＮＦ）：　引用主键
+        后一个范式，都是在前一个范式的基础上建立的
+
+
+ ６．数据库关系实现：
+    １：１　实现：　主外键关联，添加唯一约束　unnique
+    １：ｎ　实现：  主外键关联　
+    ｍ：ｎ　实现：　　通过中间表实现
+
+2.事务和事务回滚
+    １．定义： 　一件事从开始发生到结束的过程
+    ２．作用：　确保数据的一致性
+    ３．应用
+    　　１．开启事务
+    　　　　mysql> begin;
+        2.终止事务
+        　　mysql> commit; | rollback;
+        3.案例
+        　１．背景
+        　　　你：建行卡
+            　你朋友：　工商卡
+            　你到建行自动取款机给你朋友转５０００
+        　２．建表
+        　　　表１：CCB    name money
+            表　２：ICBC  name  money
+        3.转账过程
+            mysql>　点击转账按钮
+            mysql> begin;
+            mysql> update CCB set money = money - 5000 where name = "有钱人";
+            mysql> update ICBC set money = money + 5000 where name = "穷人"；
+            mysql> commit;  转账成功
+        ４．注意
+            事务只针对于表记录操作（增删改）有效　对于库和表的操作无效
+
+
+３．与python 交互
+    １．python3　：pymysql(模块名)
+        python2: MySQLdb(模块名)
+    ２．安装
+    　　１，在线：sudo pip3 install pymysql
+
+
+    create table t1(id int primary key auto_increment,name varchar(20),score float(5,2));
+
+
+    insert into t1(name,score) values("李白",60),("杜甫",75),("白居易",80);
+
+    4.pymysql 使用流程
+    　１．数据库连接对象：　db = pymysql.connect(...)
+      2.游标对象：　　cur = db.cursor()
+      3.执行命令:   cur.execute("sql命令")　注意　单双引号
+      ４．提交　　　　　db.commit()
+      5.关闭游标：　　cur.close()
+      6.断开连接：　db.close()
+
+5.pymysql.connect() 参数
+        １．host :主机地址　　         host = "localhost"
+        2.user :　用户名              user = "root"
+        ３．passwd: 密码              password = "123456"
+        ４．database :库名            database = "db5"
+        ５．charset :字符集(推荐utf8)  charset = "utf8"
+        6.port  : 端口号（3306）       port = 3306
+        
+
+6.数据库连接对象(db)的方法
+
+        1.db.cursor()  : 创建游标对象
+        2.db.commit()   提交到数据行
+        3.db.rollback()  回滚
+        4.db.close()  断开与数据库连接  
+
+7.游标对象(cur)的方法
+    1.cur.execute(sql命令)    执行sql命令
+        cur.execute(sql,[])  第二个一定要为列表
+    2.cur.close()            关闭游标对象
+    3.cur.fetchone()         取一条(查询语句)  元组
+    4.cur.fetchmany(n)       取n条   结果是一个大元组套小元组
+    5.cur.fetchall()         取所有  结果是一个大元组套小元组 一条数据也是如此  
+    
+    a = ((5,"小姐姐",100),)
+    a[0][1] = "小姐姐"
+
+
+4.MySQL调优
+    1.选择合适的存储引擎
+        1.读操作多就用 MyISAM
+        2.写操作多    InnoDB
+    2.创建索引
+        在select where order by 常涉及到的字段建立索引
+    3.SQL语句优化(避免全表扫描)
+        1.where子句中,不使用!=,否则放弃索引全表扫描
+        2.尽量避免空值(NULL)判断,否则放弃索引 全表扫描
+            优化前:select num from t1 where num is null;
+            优化后:
+                在num字段上设置默认值0,确保num字段无空值
+                select num from t1 where num = 0;
+        3.尽量避免用 or 连接条件 ,否则放弃索引 全表扫描
+            优化前:select id from t1 where id = 10 or id = 20
+            优化后:
+                select id from t1 where id = 10 union all select id from t1 where id= 20;
+        4.模糊查询尽量避免使用前置%,否则放弃索引 全表扫描
+                select name from t1 where name like "%c%";
+        
+
+        5.尽量 避免使用 in 和 not in 
+          select id from t1 where id in(1,2,3,4);
+          可以用between 1 and 4 代替
+        
+        6.尽量避免使用 selec * ... ,不要返回用不到的任何字段
+
+5.MySQL 图形化界面管理工具
+        WorkBench  LINUX下的

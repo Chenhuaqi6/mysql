@@ -1,0 +1,431 @@
+day03笔记：
+
+
+１．SQL　查询
+　　１．总结
+    　３．select ... 聚合函数　from 表名
+    　１．where ...
+      2. group by ...
+      4. having...
+      5. order by...
+      6. limit ...
+2.聚合函数
+    １．分类
+        avg(字段名)　平均值
+        sum(字段名)　和
+        max(字段名) 最大值
+        min(字段名) 最小值
+        count(字段名)　　统计该字段记录的个数
+
+mysql> select count(id),count(name) from sanguo;
+＃＃空值NULL不会被统计，＂＂会被统计
++-----------+-------------+
+| count(id) | count(name) |
++-----------+-------------+
+|         8 |           7 |
++-----------+-------------+
+
+３．group by ：给查询结果进行分组
+　１．示例：
+        计算每个国家的平均攻击力
+            
+mysql> select country,avg(gongji) from sanguo group by country;
++---------+-------------+
+| country | avg(gongji) |
++---------+-------------+
+| 吴国    |    100.0000 |
+| 蜀国    |    578.2500 |
+| 魏国    |    381.6667 |
++---------+-------------+
+
+先分组　　　再聚合　　　　最后去重
+蜀国       
+蜀国
+蜀国      578.25      蜀国
+魏国
+魏国      381.66      魏国  
+吴国　　　  100      　吴国
+
+
+查找所有国家的男英雄中，英雄数量最多的前２名，显示国家名称和英雄数量
+
+mysql> select country,count(id) from sanguo where sex = "男" group by country order by count(id) desc limit 0,2;
++---------+-----------+
+| country | count(id) |
++---------+-----------+
+| 蜀国    |         3 |
+| 魏国    |         2 |
++---------+-----------+
+2 rows in set (0.00 sec)
+select user_id,count(user_id) from comment group by user_id order by count(user_id) desc limit 0,10;
+注意：
+    １．如果select后字段和group by 之后不一致，则必须对该字段进行聚合处理（聚合函数）
+
+
+    　１．where ...
+      2. group by ...
+      4. having...
+      5. order by...
+      6. limit ...
+
+４．having  对分组聚合后的结果进行进一步筛选
+　　１．示例
+    找出平均攻击力大于１０５的国家的前俩名，显示名称和平均攻击力
+    mysql> select country,avg(gongji) from sanguo group by country having avg(gongji) > 105 order by avg(gongji) desc limit 0,2;
+            +---------+-------------+
+            | country | avg(gongji) |
+            +---------+-------------+
+            | 蜀国    |    578.2500 |
+            | 魏国    |    381.6667 |
+            +---------+-------------+
+            2 rows in set (0.00 sec)
+
+２．注意：
+    １．having 语句通常与group by语句联合使用
+    ２．having 语句的存在弥补了where 关键字不能与聚合函数联合使用的不足，where 只能操作表中实际存在的字段
+
+５．distinct:不显示字段的重复值
+　１．表中有哪些国家
+        mysql> select distinct country from sanguo;
+            +---------+
+            | country |
+            +---------+
+            | 蜀国    |
+            | 魏国    |
+            | 吴国    |
+            +---------+
+        如果后跟俩个或多个字段(distinct 和　from 之间的字段)　必须全部相同才能去重
+        不能对任何字段做聚合处理
+        select distinct country,name from sanguo;
+
+６．查询表记录时可以做数学运算
+    １．运算符　：　＋　－　＊　／　％
+    示例：
+        查询时，所有英雄攻击力翻倍　
+        mysql> select name,gongji*5 as 爆发 from sanguo;
+            +-----------+--------+
+            | name      | 爆发   |
+            +-----------+--------+
+            | 诸葛亮    |    600 |
+            | 司马懿    |    595 |
+            | 关羽      |    940 |
+            | 赵云      |   1800 |
+            | 孙权      |    500 |
+            | 貂蝉      |   3330 |
+            | NULL      |   5000 |
+            |           |   5025 |
+            +-----------+--------+
+            8 rows in set (0.00 sec)
+    ２．嵌套查询（子查询）
+    　　１．定义：把内层的查询结果作为外层的查询条件：
+        2.语法
+            select ... from 表名　where 字段名　运算符（查询）
+        　示例：
+            １．把攻击值小于平均攻击值的英雄和攻击值显示出来
+            mysql> select name,gongji from sanguo where gongji <(select avg(gongji) from sanguo);
+                        +-----------+--------+
+                        | name      | gongji |
+                        +-----------+--------+
+                        | 诸葛亮    |    120 |
+                        | 司马懿    |    119 |
+                        | 关羽      |    188 |
+                        | 赵云      |    360 |
+                        | 孙权      |    100 |
+                        +-----------+--------+
+                        5 rows in set (0.00 sec)
+            ２．找出每个国家攻击力最高的英雄名字和攻击值
+            mysql> select name,gongji from sanguo where (country,gongji) in(select country,max(gongji) from sanguo group by country);
+                    +--------+--------+
+                    | name   | gongji |
+                    +--------+--------+
+                    | 孙权   |    100 |
+                    | 貂蝉   |    666 |
+                    |        |   1005 |
+                    +--------+--------+
+                    3 rows in set (0.00 sec)
+3.多表查询
+    １．俩种方式
+        １．select 字段１，字段２　from 表１，表２（笛卡尔积）
+
+    2.多表查询（加where条件）
+    ...from 表１，表２　where 条件；
+    
+    
+mysql> select * from sheng;
+    +----+--------+-----------+
+    | id | s_id   | s_name    |
+    +----+--------+-----------+
+    |  1 | 130000 | 河北省    |
+    |  2 | 140000 | 陕西省    |
+    |  3 | 150000 | 四川省    |
+    |  4 | 160000 | 广东省    |
+    |  5 | 170000 | 山东省    |
+    |  6 | 180000 | 湖北省    |
+    |  7 | 190000 | 河南省    |
+    |  8 | 200000 | 海南省    |
+    |  9 | 200001 | 云南省    |
+    | 10 | 200002 | 山西省    |
+    +----+--------+-----------+
+    10 rows in set (0.00 sec)
+
+mysql> select * from city;
+    +----+--------+--------------+------------+
+    | id | c_id   | c_name       | cfather_id |
+    +----+--------+--------------+------------+
+    |  1 | 131100 | 石家庄市     |     130000 |
+    |  2 | 131101 | 沧州市       |     130000 |
+    |  3 | 131102 | 廊坊市       |     130000 |
+    |  4 | 131103 | 西安市       |     140000 |
+    |  5 | 131104 | 成都市       |     150000 |
+    |  6 | 131105 | 重庆市       |     150000 |
+    |  7 | 131106 | 广州市       |     160000 |
+    |  8 | 131107 | 济南市       |     170000 |
+    |  9 | 131108 | 武汉市       |     180000 |
+    | 10 | 131109 | 郑州市       |     190000 |
+    | 11 | 131110 | 北京市       |     320000 |
+    | 12 | 131111 | 天津市       |     320000 |
+    | 13 | 131112 | 上海市       |     320000 |
+    | 14 | 131113 | 哈尔滨       |     320001 |
+    | 15 | 131114 | 雄安新区     |     320002 |
+    +----+--------+--------------+------------+
+    15 rows in set (0.00 sec)
+
+mysql> select * from xian;
+    +----+--------+--------------+------------+
+    | id | x_id   | x_name       | xfather_id |
+    +----+--------+--------------+------------+
+    |  1 | 132100 | 正定县       |     131100 |
+    |  2 | 132102 | 浦东新区     |     131112 |
+    |  3 | 132103 | 武昌区       |     131108 |
+    |  4 | 132104 | 哈哈         |     131115 |
+    |  5 | 132105 | 安新县       |     131114 |
+    |  6 | 132106 | 容城县       |     131114 |
+    |  7 | 132107 | 雄县         |     131114 |
+    |  8 | 132108 | 嘎嘎         |     131115 |
+    +----+--------+--------------+------------+
+
+
+　　示例：
+        １．显示省　市　详细信息
+        mysql> select sheng.s_name,city.c_name from sheng,city where  sheng.s_id = city.cfather_id;
+            +-----------+--------------+
+            | s_name    | c_name       |
+            +-----------+--------------+
+            | 河北省    | 石家庄市     |
+            | 河北省    | 沧州市       |
+            | 河北省    | 廊坊市       |
+            | 陕西省    | 西安市       |
+            | 四川省    | 成都市       |
+            | 四川省    | 重庆市       |
+            | 广东省    | 广州市       |
+            | 山东省    | 济南市       |
+            | 湖北省    | 武汉市       |
+            | 河南省    | 郑州市       |
+            +-----------+--------------+
+
+
+        ２．显示省　市　县的详细信息
+            +-----------+--------------+-----------+
+            | s_name    | c_name       | x_name    |
+            +-----------+--------------+-----------+
+            | 河北省    | 石家庄市     | 正定县    |
+            | 湖北省    | 武汉市       | 武昌区    |
+            +-----------+--------------+-----------+
+            2 rows in set (0.00 sec)
+
+            mysql> select sheng.s_name,city.c_name,xian.x_name from sheng,city,xian where  sheng.s_id = city.cfather_id and city.c_id = xian.xfather_id;
+
+
+
+   
+    ３．连接查询
+        １．内连接（多表查询等价，只显示符合条件的记录）
+            １．select 字段名　from 表１　inner join 表２ on 条件　inner join 表３　on 条件；
+
+            ２．显示省　市　详细信息
+            　select sheng.s_name,city.c_name from sheng 
+              inner join city 
+              on sheng.s_id = city.cfather_id;
+                ＼
+
+            显示　省　市　县
+            mysql> select sheng.s_name,city.c_name,xian.x_name from
+                -> sheng inner join city
+                -> on sheng.s_id=city.cfather_id
+                -> inner join xian
+                -> on city.c_id = xian.xfather_id;
+            +-----------+--------------+-----------+
+            | s_name    | c_name       | x_name    |
+            +-----------+--------------+-----------+
+            | 河北省    | 石家庄市     | 正定县    |
+            | 湖北省    | 武汉市       | 武昌区    |
+            +-----------+--------------+-----------+
+　
+
+
+
+        ２．外连接
+            １．左连接（left）
+            　１．定义：左表为主显示查询结果
+                mysql> select sheng.s_name,city.c_name from sheng
+                    -> left join city
+                    -> on sheng.s_id = city.cfather_id;
+                +-----------+--------------+
+                | s_name    | c_name       |
+                +-----------+--------------+
+                | 河北省    | 石家庄市     　|
+                | 河北省    | 沧州市       　|
+                | 河北省    | 廊坊市       　|
+                | 陕西省    | 西安市       　|
+                | 四川省    | 成都市       　|
+                | 四川省    | 重庆市       　|
+                | 广东省    | 广州市       　|
+                | 山东省    | 济南市       　|
+                | 湖北省    | 武汉市       　|　
+                | 河南省    | 郑州市       　|
+                | 海南省    | NULL         |
+                | 云南省    | NULL         |
+                | 山西省    | NULL         |
+                +-----------+--------------+
+                13 rows in set (0.00 sec)
+
+                ２．显示　省　市　县　详细信息，所有的市全部显示
+                mysql> select sheng.s_name,city.c_name,xian.x_name from
+                    -> sheng right join city
+                    -> on sheng.s_id = city.cfather_id
+                    -> left join xian
+                    -> on city.c_id = xian.xfather_id;
+                +-----------+--------------+--------------+
+                | s_name    | c_name       | x_name       |
+                +-----------+--------------+--------------+
+                | 河北省    | 石家庄市     | 正定县       |
+                | NULL      | 上海市       | 浦东新区     |
+                | 湖北省    | 武汉市       | 武昌区       |
+                | NULL      | 雄安新区     | 安新县       |
+                | NULL      | 雄安新区     | 容城县       |
+                | NULL      | 雄安新区     | 雄县         |
+                | 河北省    | 沧州市       | NULL         |
+                | 河北省    | 廊坊市       | NULL         |
+                | 陕西省    | 西安市       | NULL         |
+                | 四川省    | 成都市       | NULL         |
+                | 四川省    | 重庆市       | NULL         |
+                | 广东省    | 广州市       | NULL         |
+                | 山东省    | 济南市       | NULL         |
+                | 河南省    | 郑州市       | NULL         |
+                | NULL      | 北京市       | NULL         |
+                | NULL      | 天津市       | NULL         |
+                | NULL      | 哈尔滨       | NULL         |
+                +-----------+--------------+--------------+
+                17 rows in set (0.00 sec)
+
+
+
+
+            ２．右连接(right)
+                以右表为主，显示查询结果，用法同左连接
+            mysql> select sheng.s_name,city.c_name from sheng 
+                    right join city 
+                    on sheng.s_id = city.cfather_id;
+                +-----------+--------------+
+                | s_name    | c_name       |
+                +-----------+--------------+
+                | 河北省    | 石家庄市     |
+                | 河北省    | 沧州市       |
+                | 河北省    | 廊坊市       |
+                | 陕西省    | 西安市       |
+                | 四川省    | 成都市       |
+                | 四川省    | 重庆市       |
+                | 广东省    | 广州市       |
+                | 山东省    | 济南市       |
+                | 湖北省    | 武汉市       |
+                | 河南省    | 郑州市       |
+                | NULL      | 北京市       |
+                | NULL      | 天津市       |
+                | NULL      | 上海市       |
+                | NULL      | 哈尔滨       |
+                | NULL      | 雄安新区     |
+                +-----------+--------------+
+                15 rows in set (0.00 sec)
+
+sudo pip3 install pymysql
+
+离线：
+    下载　xxx.tar.gz
+    解压:　tar -zxvf xxx.tar.gz
+    cd xxx
+    sudo python3 setup.py install
+
+
+5. 约束
+    １．非空约束(not null)
+
+    2.默认约束(default 默认值)
+        mysql> create table t3(id int(3) zerofill,usename varchar(20) not null, sex enum("男","女","保密") not null default "男")charset = utf8;
+        +---------+----------------------------+------+-----+---------+-------+
+        | Field   | Type                       | Null | Key | Default | Extra |
+        +---------+----------------------------+------+-----+---------+-------+
+        | id      | int(3) unsigned zerofill   | YES  |     | NULL    |       |
+        | usename | varchar(20)                | NO   |     | NULL    |       |
+        | sex     | enum('男','女','保密')     | NO   |     | 男      |       |
+        +---------+----------------------------+------+-----+---------+-------+
+3 rows in set (0.00 sec)
+
+
+６．索引（BTREE）
+    １．定义：
+        对数据库中表的一列或者多列的值进行排序的一种结构
+    2.优点
+        加快数据的检索速度
+    ３．缺点
+        １．占用物理存储空间
+        ２．当对表中数据更新时，索引需要动态维护，占用系统资源，降低数据的维护速度
+    ４．索引示例
+    　　　１．开启运行时间监测
+            mysql> set profiling =1;
+        　２．执行一条查询命令（没有创建索引）
+            select name from t1 where name = "lucy88888";
+          ３．在name字段创建一个索引
+          mysql>create index name on t1(name);
+          ４．再次执行一条查询命令
+            select name from t1 where name = "lucy88888";
+          ５．对比执行时间
+           mysql> show profiles;
+
+
+7.索引的分类
+    １．普通索引（index） && 唯一索引（unique)
+      1.使用规则
+        １．可设置多个字段
+        ２．index 无约束，unique 字段值不能重复，但可为NULL
+        ３．把经常用来查询的字段设置为索引字段
+    　　４．index 的key标志，MUL   unique 的标志　UNI
+    ２．创建表时创建
+        create table 表名（.. .. ..） index(name),index(id),unique(phnumber),unique(cardnumber);
+        mysql> create table t5(id int,name varchar(20),age tinyint,phnumber bigint,index(name),unique(phnumber))charset = utf8;
+        Query OK, 0 rows affected (0.03 sec)
+
+        mysql> desc t5;
+        +----------+-------------+------+-----+---------+-------+
+        | Field    | Type        | Null | Key | Default | Extra |
+        +----------+-------------+------+-----+---------+-------+
+        | id       | int(11)     | YES  |     | NULL    |       |
+        | name     | varchar(20) | YES  | MUL | NULL    |       |
+        | age      | tinyint(4)  | YES  |     | NULL    |       |
+        | phnumber | bigint(20)  | YES  | UNI | NULL    |       |
+        +----------+-------------+------+-----+---------+-------+
+        4 rows in set (0.00 sec)
+    
+    3.在已有表中创建
+    　create [unique] index 索引名 on 表名（字段名）;
+
+    4.查看索引
+        １．desc 表名　－－－＞　Key 标志
+        ２．show index from 表名;
+    5.删除索引
+        drop index 索引名　on 表名；
+
+
+
+
+
+        

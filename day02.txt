@@ -1,0 +1,287 @@
+day02
+1、MySQL　数据类型
+    １、数值类型
+    ２、字符类型
+    ３、枚举类型
+        １、枚举　enum,是一个字符串对象，可以将一些不重复的字符串存储成一个预定义的集合，字段值必须从这个集合中选取，才是合法值。
+        　　　　　最多可以列举65535个值。
+                枚举经常用来实现单选：
+                    et:
+                        create table userinfo(id int,name char(10),sex enum("男","女","保密"))；
+
+                    特点：
+                        枚举中的数据从左到右会自动分配索引，从１开始，查询数据时，可以根据字符串值进行查询，也可以根据索引值查询
+                        et:
+                            select * from userinfo where sex="男"；
+                            等价于
+                            select * from userinfo where sex = 1;
+        2、集合
+            集合是一种特殊的枚举类型，可以指定一个选项列表，但是字段值可以取范围内的多个值，可以实现多选
+            类型名用set来表示
+
+                    et:
+                        create table couseTab (sportcourse set("篮球","足球","羽毛球"))   
+                        insert into couseTab values("篮球,足球,羽毛球")
+    ４、日期时间类型
+            １、date: "YYYY-MM-DD"
+            2、time: "hh:mm:ss"
+            3、datetime: "YYYY-MM-DD hh:mm:ss"
+            4、timestamp :"YYYY-MM-DD hh-mm-ss"
+        注意：“
+            １、datetime:不给值　　(但是要有匹配就是给NULL)　，默认返回ＮＵＬＬ
+            ２、timestamp :不给值(NULL)，默认返回系统当前时间
+            ３、日期格式：
+                ”2000/11/11 10:10:10“
+                "20081010121212"
+    5、日期时间函数
+        １、now() 返回当前系统时间
+        ２、curdate() 返回当前日期（年月日）
+        3、curtime() 返回当前时间（时分秒）
+        
+        用于查询 
+          例如：
+                date(date) = "20181111"
+
+        ４、year(date) 返回指定日期的年份
+        5、date(date) 返回指定日期的年月日
+        ６、time(date) 返回指定日期的时分秒
+
+
++------+----------+----------+-------+------------+---------------------+
+| id   | username | password | money | birthday   | cztime              |
++------+----------+----------+-------+------------+---------------------+
+|    1 | xm       | 123456   |   200 | 2000-10-10 | 2018-10-10 10:10:10 |
+|    2 | xh       | 123456   |  1000 | 2003-11-11 | 2018-11-02 10:57:11 |
+|    3 | xb       | 123      |    50 | 2005-01-10 | 2012-09-09 12:34:56 |
+|    4 | xb       | 123      |    50 | 2005-01-10 | 2018-11-02 11:03:55 |
+|    5 | chq      | 726316   | 80000 | 1997-03-17 | 2018-11-02 11:16:29 |
+|    5 | zz       | 726316   |   900 | 1995-03-17 | 2018-10-10 12:12:12 |
+|    5 | zz       | 726316   |   900 | 1995-03-17 | 2018-10-10 12:12:45 |
++------+----------+----------+-------+------------+---------------------+
+7 rows in set (0.00 sec)
+
+查询20181102这天　10点到12点的充值记录
+select username from t1 where date(cztime)="20181102" and time(cztime)>="100000" and time(cztime)<="120000";
++----------+
+| username |
++----------+
+| xh       |
+| xb       |
+| chq      |
++----------+
+3 rows in set (0.00 sec)
+
+查询2018年１０月１０日到２０１８年１１月１５日的充值记录
+select username from t1 where date(cztime) >="20181010" and date(cztime)<= "20181115";
++----------+
+| username |
++----------+
+| xm       |
+| xh       |
+| xb       |
+| chq      |
+| zz       |
+| zz       |
++----------+
+6 rows in set (0.00 sec)
+
+查询２０１８年１０月１０日当天的充值记录
+mysql> select username from t1 where date(cztime) ="20181010";
++----------+
+| username |
+
++----------+
+| xm       |
+| zz       |
+| zz       |
++----------+
+3 rows in set (0.00 sec)
+
+６．日期时间运算
+    １．语法格式
+        select * from 表名　where 字段名　运算符(时间－interval 时间单位)
+        时间单位：
+            ｅｔ：
+                1 day | 2 hour | 1 minute | 1 year | 1 month 
+    练习：
+        １．查询一天以内的充值记录
+        select * from t1 where cztime >= (now()-interval 1 day);
+        2.查询一年前的充值记录
+        select * from t1 where cztime < (now()-interval 1 year);
+        3.查询一天以前三天以内的充值记录
+        select * from t1 where cztime < (now()-interval 1 day) and cztime > (now()-interval 3day);
+    3.表示未来的时间节点：
+            et:
+                从当前系统时间向后推算一年，明年　now()-interbal -1 year
+                insert into t1 values(6,"xxx","123456","100",20090909,now()-interval -1 year);
+
+
+2. 表结构操作（操作字段）　（字段的增删改查）
+    １．语法：　alter table 表名　执行动作；
+    ２．添加字段（add）
+        ／／直接在最后一列的位置添加新字段
+       alter table 表名 add 字段名　数据类型；
+        ／／在第一列的位置添加新字段
+        alter table 表名　add 字段名　数据类型　first;
+        //在指定字段的后面添加新字段
+        alter table 表名　add 字段名　数据类型　after 已有字段名；
+
+    ３．删除字段
+    　　alter table 表名　drop 字段名；
+    ４．修改数据类型
+        alter table 表名　modify 字段名　新数据类型;
+    5,表的重命名（rename）
+        alter table 表名　rename 新表名;
+    6.修改字段名
+    　alter table 表名　change 原来的字段名　新的字段名　数据结构;
+
+
+3.表记录管理　(表记录的增删改查)
+    １．插入数据　insert into　表名 values(),(),....;
+    2. 查询数据　　select * from 表名　where 条件;
+    3. 删除数据
+        1.delete from 表名　where 条件；
+        ２．如果省略where条件　，　delete from 表名;　表示清空所有记录；
+    ４．更新数据
+        １．update 表名　set 字段１＝值，字段２＝值，．．．．where 条件；
+        ２．在做表更新时　update 必须写where 条件
+
+
+总结：
+    　　　　　表字段　　　　　　　　　　　　　　表记录
+
+增　　　　　　 add                         insert into  表名...
+删          drop                        delete from 表名
+改   modify(修改数据类型) change(修改字段名)   update 表名　set ...
+查          des                         select * from 表名．．．．
+
+４．运算符
+    １．数值比较／字符比较
+        １．数值比较：　=  != > >= < <=
+        2.字符比较　= !=
+    2.逻辑运算符
+        １．条件１　and 条件２；（查询同时满足俩个条件的数据）
+        ２．条件１　or 条件２; (查询满足条件１　或者满足条件２的数据)
+    ３．范围内比较
+        １．between 值１　and 值２
+            设置范围在值１　和值２之间
+        ２．where 字段名　in （值１，值２，值３，．．．）
+        　　　匹配字段值在　ｉｎ　给出的范围内的数据
+                et :
+                    where age in(22,23,24,25);
+        3.否定筛选
+            where 字段名　not in(值１，值２，值３)；
+            匹配字段值不在指定范围内的数据
+    ４．匹配空　非空   
+        １．匹配空　:　where 字段　is null;
+        2.匹配非空　　where 字段　is not null;
+        注意： 
+            １．is null 和　is not null 主要用来匹配字段值等于　NULL的数据
+            ２．空字符串可以直接用　=　来匹配
+                et:
+                    where name = "";
+                    where name is NULL;
+    5.模糊查询
+        １．格式：　where 字段名　like 表达式
+        ２．表达式：
+            １．_ :表示匹配一个字符
+            ２．％　：表示匹配０到多个字符
+        ３．示例：
+            １．查找姓名包含俩个字符（含２个字符）以上的数据
+                select * from sanguo where name like "＿％＿";
+            ２．匹配所有数据
+                select name fromn sanguo where name like "%";
+                注意：
+                    NULL值不会被匹配出来
+                    空字符串表示０个字符，会被正常匹配
+            ３．匹配姓名为３个字符的数据
+                where name like "___"; #三个下划线
+            ４．匹配姓赵的数据；
+                where name like "赵％＿"；　#至少是俩个字
+                et:
+                    select name from sanguo where name like "赵％＿"；
+                更改查询结果中的显示字段：
+                    select name as n from sanguo where name like "赵％＿"；
+                    mysql> select name as n from sanguo where name like "赵%_";
+                    +--------+
+                    | n      |
+                    +--------+
+                    | 赵云   |
+                    +--------+
+             
+５．SQL 查询
+    １．完整的查询语句由以下关键字组成
+        顺序为　书写顺序
+        序号　是mysql执行顺序
+
+        3.select
+        1.where
+        2.group by 
+        4.having　
+        5.order by　排序
+        6.limit  分页
+    
+    ２．order by :对查询结果进行排序
+        １．格式：　．．．　order by 字段名　ASC(升序)／DESC(降序))
+            ２．示例：
+                １．将英雄按防御值从高到底排序
+                select * from sanguo order by fangyu DESC;
+
+                select * from sanguo where country = "蜀国" order by gongji DESC;
+
+                select * from sanguo where name like "___" and country in ("蜀国","魏国") order by fangyu ASC;
+                +------+-----------+--------+--------+------+---------+
+                | id   | name      | gongji | fangyu | sex  | country |
+                +------+-----------+--------+--------+------+---------+
+                |    1 | 诸葛亮    |    120 |     20 | 男   | 蜀国    |
+                |    2 | 司马懿    |    119 |     25 | 男   | 魏国    |
+                +------+-----------+--------+--------+------+---------+
+2 rows in set (0.00 sec)
+
+    
+    ３．limit 分页查询
+    　　　永远放在SQL语句的最后书写
+        分页用来控制显示多少条结果中的数据
+        １．语法：
+            １．limit n; 表示显示n 条数据
+            ２．limit m,n; 表示显示从第m+1条记录开始显示，显示n条
+              et:
+                limit 2,3; 显示第３，４，５　三条数据
+
+            ３．示例
+            　　蜀国中　防御值倒数第二至倒数第四的英雄记录
+            mysql> select * from sanguo where country = "蜀国" order by fangyu ASC limit 1,3;
++------+--------+--------+--------+------+---------+
+| id   | name   | gongji | fangyu | sex  | country |
++------+--------+--------+--------+------+---------+
+|    3 | 关羽   |    188 |     60 | 男   | 蜀国    |
+|    8 |        |   1005 |     88 | 女   | 蜀国    |
+|    7 | NULL   |   1000 |     99 | 男   | 蜀国    |
++------+--------+--------+--------+------+---------+
+3 rows in set (0.00 sec)
+
+　　　蜀国　攻击值　前三的　不含ＮＵＬＬ
+mysql> select * from sanguo where country = "蜀国" and name is not null order by gongji DESC limit 0,3;
++------+-----------+--------+--------+------+---------+
+| id   | name      | gongji | fangyu | sex  | country |
++------+-----------+--------+--------+------+---------+
+|    8 |           |   1005 |     88 | 女   | 蜀国    　|
+|    3 | 关羽      |    188 |     60 | 男   | 蜀国    　|
+|    1 | 诸葛亮    |    120 |     20 | 男   | 蜀国    　|
++------+-----------+--------+--------+------+---------+
+        显示　２０－２５
+        limit 19,6
+
+    4.select 查询
+        select * 
+        select 字段
+        select 聚合函数　where..
+        1.聚合函数
+            最大值　最小值　求和　平均值　计数
+
+
+聚合函数
+avg(..) sum(...) max(...)  min(...)
+count(....)
+#空值NULL不会被统计
+＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊＊

@@ -1,0 +1,332 @@
+１、MySQL概述
+    １、什么是数据库
+        数据库就是存储诗数据的仓库
+    ２、都有哪些公司在使用数据库
+        电商公司，游戏公司，金融机构，政府部门...
+    3、提供数据库服务的软件
+        １、软件分类
+            MySQL,Oracle,SQL-server,DB2,MongoDB,MariaDB
+            ...
+        ２、生产环境中，如何选择使用哪一种数据库软件
+            １、是否开源
+                １、开源软件：MySQL,MongoDB,MariaDB
+                ２、商业软件：Oracle,DB2,SQL-server
+            2、是否跨平台
+                1、不跨平台：SQL-server
+                2、跨平台:...
+            3、公司类型
+                １、商业软件：政府机构，金融机构
+                ２、开源软件：游戏公司，电商公司，论坛和贴吧网站....
+            4、MySQL 数据库特点：
+                １、关系型数据库
+                    １、关系型数据库的特点
+                        １、数据以行和列（表格形式）存储
+                        ２、表中每一行叫一条记录，每一列叫一个字段
+                        ３、表与表之间的逻辑关联叫关系
+                    ２、实例：
+                        １、关系型数据库存储数据：
+                             表１　学生信息表
+                                姓名　　　年龄　　　班级
+                                星矢     25      三班
+                                水冰月　　25      六班
+                        
+                            表２　班级信息表
+                                班级　　　　　班主任
+                                三班        小泽玛利亚
+                                六班        苍井空
+                    
+                    ２、非关系型数据库存储数据
+                      {"姓名":"星矢","年龄":"25","班级":"三班","班主任":"小泽玛利亚"}
+                      {"姓名":"水冰月","年龄":"25","班级":"六班","班主任":"苍井空"}
+                2、跨平台
+                    可在Winndows,Linux,Unix上运行
+                ３、支持多种编程语言
+                    python  java  php
+
+            5、数据库软件，数据库，数据仓库的概念
+                １、数据库(database,简写DB,db)
+                    存储在计算机内的有组织可共享的数据集合
+                ２、数据库软件(数据库管理系统)
+                    　一个软件，看得见，可操作的工具，可以通过SQL语句操作数据库(SQL:结构化查询语句)
+                ３、数据仓库(Data WareHouse))
+                    数据量要比数据库大的多，主要用于数据分析和数据挖掘
+                    et:
+                        数据库：购物车表，用户信息表
+                        数据仓库：分析哪个时间段用户的访问量最大，哪个用户一年中购物最多....
+
+2、 MySQL安装
+    １、Ubuntu安装MySQL服务(命令行安装方式)
+        1、安装服务端
+            sudo apt-get install mysql-server
+        ２、安装客户端
+            sudo apt-get install mysql-client
+        3、Ubuntu安装软件
+            １、sudo apt-get update
+                访问源列表中的每个网址，读取软件列表，保存到本地/var/lib/apt/lists
+
+            2、sudo apt-get upgrade
+                把本地已安装软件与刚下载的软件列表进行比对，如果发现安装的软件版本低，则更新软件
+            
+            3、sudo apt-get-f install
+                修复依赖关系
+    
+    ２、Windows安装MySQL
+        １、下载安装包
+            mysql-install***5.7.24.msi
+        ２、按照安装教程安装
+
+    3、Mac　安装MySQL
+        1、下载安装包(dmg -> pkg)
+        2、设置环境变量
+            １、vi .base._profile
+            2、在末尾写入如下内容，保存并退出
+                export PATH=${PATH}:/usr/local/mysql/bin
+                或者
+                PATH="$PATH":/usr/local/mysql/bin
+        3.在命令行下 $source.base_profile
+        4.登录测试
+            mysql -uroot -p
+
+3、启动和连接数据库
+    １、启动服务端（终端下）
+        １、查看MySQL状态
+            sudo /etc/init.d/mysql status
+            启动MySQL服务
+            sudo /etc/init.d/mysql start | stop | restart
+
+
+    2、客户端连接
+        １、命令格式：
+            mysql -h主机地址　　-uroot -p 密码
+            et:
+              mysql -hlocalhost -uroot -p123456
+        2、本地连接可以省略 -h选项
+            mysql -uroot -p123456
+
+4、基本SQL命令：
+    1、SQL命hao令的使用规则
+        １、SQL命令不区分大小写，但是区分中英文标点符号，一律使用英文标点符号 "" : 空格
+
+        ２、每条命令以 ;　(分号)结尾
+
+        ３、如果命令写错，使用\c终止当前命令的执行
+    MySQL 核心是关系（二维表）
+
+    2、库的管理
+        １、库的基本操作
+            １、查看已有库
+                show databases;
+
+            2、创建库
+                create database 库名;
+                创建的同时指定字符集
+                create database 库名　character set utf8;
+
+            3、 查看创建库的语句(字符集)
+                show create database 库名;
+            
+            4、　查看当前所在库
+                select database();
+            
+            5、　切换／选择库
+                use 库名;
+            
+            6、　查看当前库中所有的表
+                show tables;
+            
+            7、 删除库
+                drop database 库名;
+
+        2、库名的命名规则
+            １、库名由数字，字母，下划线组成，不能使用纯数字
+            
+            ２、库名区分大小写
+                et:
+                    １、SQL命令不区分大小写
+
+                        CREATE DATABASE TESTDB;
+                        等价于
+                        create database TESTDB;
+                
+                    ２、库名区分大小写
+                        create database TESTDB;
+                        create database Testdb;
+                        库名只要有一点不同就创建了俩个库：
+                                TESTDB
+                                Testdb
+                    3、　不能使用特殊字符和MySQL的关键字
+    
+    ３．表记录管理
+        １、表的管理
+            １、表的基本操作
+                １、创建表
+                    create table 表名 (字段名 数据类型，字段２　数据类型，...);
+                    创建的同时制定字符集
+                    create table 表名(字段１　数据类型，字段２　数据类型，．．．)　character set utf8;
+                2、查看已有表的字符集
+                    show create table 表名;
+                3、查看表结构
+                    desc 表名;
+                4、删除表
+                    drop table 表名;
+                
+            注意：
+                １、如果涉及到多个库切换操作表，一定不要忘了切换数据库
+                ２、所有的数据在数据库中都是以文件的形式存储的，存放目录为：/var/lib/mysql
+        2、表记录管理（操作数据）
+
+        　　１、插入数据(insert)
+                1、insert into 表名　values(值1),(值２)，（值３）,...;
+                  注意:　（）中实际代表的是一行，一条记录
+                  insert into stuinfo values(1,"张三丰"，300),(2,"小泽玛利亚",30),(3,"冲田杏梨",28)
+                
+                2、　insert into 表名（字段１，字段２，．．．） values(值１)，（值２）,...;
+                    insert into stuinfo(name,age) values("苍井空",32)，（"加藤鹰",35）;  #指定了只添加　name,age 
+
+            2、查询数据(select)
+                1、select * from 表名；　＃查询所有数据
+                ２、select * from 表名　where 条件　＃查询表中满足条件的数据　
+            
+            ３、select 字段１，字段２　from 表名[where 条件]；　　　＃字段１　字段２　表示查那些类型
+                    注意[]可选添加
+
+            ４、更改默认字符集
+                １、方法：修改mysql的配置文件
+                ２、步骤：
+                    １、获取root权限
+                        sudo -i
+                    2、cd /etc/mysql/mysql.conf.d/
+                    3、备份（相当重要）
+                        cp mysqld.cnf mysqld.cnf.bak
+                    4、修改
+                        使用sublime修改
+                            subl mysql.cnf 
+                            找到[mysqld]
+                            添加 character_set_server = utf8
+                        
+                        使用vi修改文件
+                            vi mysql.cnf
+                            找到[mysqld]
+                            添加 character_set_server = utf8
+                    5、重启mysql服务
+                        sudo /etc/init.d/mysql restart
+                    6、连接客户端
+                        mysql -uroot -p123456
+                    7、　MAC 电脑
+                        文件路径
+                            /etc/my.cnf
+                            [mysql]
+                            character_set_server = utf8
+
+5、　数据类型
+    １、数值类型
+        １、整型
+            １、int 大整形(4个字节)
+                取值范围：０～2**32-1
+            2、tinyint 微小整型(1个字节)
+                １、有符号整型（默认） 
+                    取值范围　－１２８－１２７
+                　  id tinyint signed
+                2、无符号整型(unsigned)
+                    取值范围　０－２５５
+                    age tinyint　unsigned
+            3.smallint 小整型（2个字节）
+            
+            ４.bigint 极大整型（8字节）
+        ２．浮点型
+            １、float(4个字节，最多显示七个有效位)
+                １、用法：
+                    字段名　float(m,n)
+                    m表示总位数
+                    n表示小数位的位数
+                    et:
+                        score float(3,1)  #99.5
+                注意：
+                    １、浮点型：插入整数时，小数位会自动补齐０
+                    ２、小数位如果多于指定位，会自动对指定位的下一位进行四舍五入
+                2.double(8个字节)
+                    用法和float一致
+                    float 是单精度　误差大
+                    double 是双精度 误差稍小　在mysql内部运算时，都采用double运算
+                ３、decimal （最多可显示２８个有效位）
+                    用法:
+                        decimal(m,n)
+                        m表示总位数，n表示小数位位数
+        ３．数值类型占用的存储空间
+            整数和小数是分开存储的，需要各自计算所需的字节数
+            规则：
+                将９的倍数包装成４个字节
+            余数占用字节对照表
+                    余数　　　　　　　　字节
+                     ０                ０
+                    1-2                1
+                    3-4                2
+                    5-6                3
+                    7-8                4
+                    et:
+                        decimal(19,9)
+                        计算存储空间：
+                           １． 整数位数　除以９，商都占用４个字节
+                            余数，根据对照表判断占用几个字节
+                            10/9 商１　余数　１　
+                            占用字节　４＋１＝５个字节
+                            ２．小数位数　除以９
+                            ９／９　商　１　余数　０　
+                            占用字节数　４＋０＝４
+                练习：
+                    １、创建库studb2
+                    2、在库中创建表stuinfo
+                        id  大整型
+                        name  字符型　宽度１５
+                        age  微小整型，不能为负数
+                        height 浮点型　小数位为２位(float(5,2))
+                        money 浮点型　小数位为２位(float(5,2))
+                    ３、查看表结构
+                    ４、查看表的字符集
+                    ５、插入一条完整记录，在表中id,name 俩个字段中插入俩条记录
+                    ６、查询所有记录
+                    ７、查询所有学生的id和姓名
+                    
+
+    ２、字符类型
+        １、char(m)
+                m指定最大显示宽度，同时也指定最大字符个数
+                取值范围１－２５５　
+                特点：定长存储
+                    char(10) 固定分配１０个字符的空间存储数据
+        ２、varchar(m):
+                m指定最大的显示宽度，也制定最大字符个数
+                取值范围　１－６５５３５
+                特点：
+                    变长存储
+                        varchar(10)
+                        根据数据的实际长度分配空间，小于１０个字符按照实际的字符数分配空间，最大可分配１０个字符的空间
+                        超过１０个字符的数据　无法存储进去，会报错
+        ３、text / longtext(4个Ｇ)　／　blob / longblob(4g)
+            text相关的类型可用来存储大批量的文本数据（博文等）
+            blob相关的类型更适用于二进制数据的存储（图片）
+
+            注意：
+                １、定长和变长字符类型在存储空间上区别较大，
+                    char 定长存储：浪费存储空间，但是性能高，直接分配固定的存储空间
+                    
+                    varchar 变长存储：节省存储空间，但是性能低，会根据实际字符数分配存储空间
+
+                ２、字符类型的显示宽度与数值类型宽度的区别
+                    et:
+                        int(11)
+                        char(10)
+                        1、数值类型的宽度为显示宽度，用于select　查询时显示结果和占用存储空间无关
+                            即使超出了显示宽度，只要没有超出数据类型的取值范围都可以插入成功
+                        ２、字符类型的宽度不仅是显示宽度，还是最大字符个数，超出就无法存储
+
+                        ３、数值类型如果指定显示宽度，而数据长度小于宽度，会自动补０，填充显示宽度，
+                            结合zerofill 属性查看效果
+                            id int(5) zerofill,
+
+
+    ３、枚举和集合
+    ４、日期和时间类型
+
+
+                
